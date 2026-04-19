@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Landing Transition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { 
+            width: 100%; height: 100%; 
+            background: #000; 
+            overflow: hidden; 
+            font-family: 'Syncopate', sans-serif; 
+        }
+
+        /* Video Container (Initially Hidden) */
+        #video-viewport {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+
+        video {
+            width: 100%; height: 100%;
+            object-fit: cover;
+        }
+
+        /* Overlay for Text & Button */
+        .content-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            background: rgba(0,0,0,1);
+            transition: background 1.5s ease, opacity 1s ease;
+        }
+
+        #entry-btn {
+            padding: 15px 40px;
+            background: transparent;
+            color: #00f2ff;
+            border: 2px solid #00f2ff;
+            font-size: 1rem;
+            letter-spacing: 5px;
+            cursor: pointer;
+            box-shadow: 0 0 15px #00f2ff;
+            transition: 0.4s;
+        }
+
+        #entry-btn:hover {
+            background: #00f2ff; color: #000;
+        }
+
+        /* Animated Letters */
+        .text-wrapper {
+            display: none;
+            text-align: center;
+            transition: transform 1s ease, opacity 1s ease;
+        }
+
+        .letter {
+            display: inline-block;
+            font-size: 5vw;
+            color: #fff;
+            opacity: 0;
+            filter: blur(10px);
+            transform: translateY(20px);
+        }
+
+        .animate-in {
+            animation: letter-reveal 0.8s forwards;
+        }
+
+        @keyframes letter-reveal {
+            to { opacity: 1; filter: blur(0); transform: translateY(0); }
+        }
+
+        /* Class to hide UI smoothly */
+        .fade-out-ui {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="video-viewport">
+        <video id="bg-video" loop muted playsinline>
+            <source src="22.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <div class="content-overlay" id="intro-layer">
+        <button id="entry-btn">এখানে চাপুন</button>
+        <div class="text-wrapper" id="text-box"></div>
+    </div>
+
+    <script>
+        const btn = document.getElementById('entry-btn');
+        const textBox = document.getElementById('text-box');
+        const introLayer = document.getElementById('intro-layer');
+        const videoDiv = document.getElementById('video-viewport');
+        const video = document.getElementById('bg-video');
+        
+        const phrase = "FUCK YOU BABY FUCK FUCK";
+
+        // টেক্সট তৈরি করা
+        function setupText() {
+            phrase.split("").forEach((char, i) => {
+                const span = document.createElement('span');
+                span.textContent = char === " " ? "\u00A0" : char;
+                span.className = 'letter';
+                span.style.animationDelay = `${i * 0.08}s`;
+                textBox.appendChild(span);
+            });
+        }
+
+        btn.addEventListener('click', () => {
+            btn.style.display = 'none';
+            textBox.style.display = 'block';
+            setupText();
+
+            // লেটার অ্যানিমেশন শুরু
+            setTimeout(() => {
+                document.querySelectorAll('.letter').forEach(l => l.classList.add('animate-in'));
+            }, 100);
+
+            // AI ভয়েস শুরু
+            const msg = new SpeechSynthesisUtterance(phrase);
+            msg.rate = 0.85; 
+            msg.pitch = 0.8;
+
+            msg.onend = () => {
+                // ভয়েস শেষ হলে লেখা সরে যাবে এবং ভিডিও আসবে
+                setTimeout(() => {
+                    // ১. টেক্সট ও লেয়ার ফেড আউট
+                    introLayer.classList.add('fade-out-ui');
+                    
+                    // ২. ভিডিও দৃশ্যমান করা এবং প্লে করা
+                    videoDiv.style.opacity = "1";
+                    video.muted = false; // আপনি চাইলে এখানে সাউন্ড অন করতে পারেন
+                    video.play();
+                }, 500);
+            };
+
+            window.speechSynthesis.speak(msg);
+        });
+    </script>
+</body>
+</html>
